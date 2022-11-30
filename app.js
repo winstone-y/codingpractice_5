@@ -54,7 +54,7 @@ app.get("/movies/", async (request, response) => {
 });
 
 // ADD NEW MOVIE IN movie table POST API 2
-app.get("/movies/", async (request, response) => {
+app.post("/movies/", async (request, response) => {
   const movieData = request.body;
   const { directorId, movieName, leadActor } = movieData;
   const postNewMovieQuery = `
@@ -76,12 +76,7 @@ app.get("/movies/:movieId/", async (request, response) => {
   const { movieId } = request.params;
 
   const getMovieQuery = `
-    SELECT 
-    * 
-    FROM 
-    movie 
-    WHERE 
-    movie_id = ${movieId};`;
+    SELECT * FROM movie;`;
 
   const movies = await db.get(getMovieQuery);
   const convertDbObjectToResponseObject = (dbObject) => {
@@ -92,13 +87,13 @@ app.get("/movies/:movieId/", async (request, response) => {
       leadActor: dbObject.lead_actor,
     };
   };
-  const moviesList = movies.map((m) => convertDbObjectToResponseObject(m));
+  const moviesList = convertDbObjectToResponseObject(movies);
 
   response.send(moviesList);
 });
 
 // UPDATE MOVIE IN movie table PUT API 4
-app.get("/movies/:movieId/", async (request, response) => {
+app.put("/movies/:movieId/", async (request, response) => {
   const movieData = request.body;
   const { movieId } = request.params;
   const { directorId, movieName, leadActor } = movieData;
@@ -117,7 +112,7 @@ app.get("/movies/:movieId/", async (request, response) => {
 });
 
 // DELETE MOVIE FROM movie table API 5
-app.get("/movies/:movieId/", async (request, response) => {
+app.delete("/movies/:movieId/", async (request, response) => {
   const { movieId } = request.params;
   const deleteMovieQuery = `
     DELETE  
@@ -139,14 +134,7 @@ app.get("/movies/:movieId/", async (request, response) => {
 // GET DIRECTORS LIST FROM director table API 6
 
 app.get("/directors/", async (request, response) => {
-  const getAllDirectorsQuery = `
-    SELECT 
-    * 
-    FROM 
-    director 
-    ORDER BY 
-    director_id;
-    `;
+  const getAllDirectorsQuery = `SELECT * FROM director;`;
 
   const directors = db.all(getAllDirectorsQuery);
   const convertDbObjectToResponseObject = (dbObject) => {
@@ -163,7 +151,7 @@ app.get("/directors/", async (request, response) => {
 //GET ALL MOVIES BY DIRECTOR API 7
 
 app.get("/directors/:directorId/movies/", async (request, response) => {
-  const directorId = request.params;
+  const { directorId } = request.params;
 
   const moviesByDirectorQuery = `
     SELECT 
@@ -171,7 +159,7 @@ app.get("/directors/:directorId/movies/", async (request, response) => {
     FROM 
     movie 
     WHERE 
-    director_id =${directorId};`;
+    director_id=${directorId};`;
 
   const movies = await db.all(moviesByDirectorQuery);
   const convertDbObjectToResponseObject = (dbObject) => {

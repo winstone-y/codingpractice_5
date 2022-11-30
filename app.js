@@ -31,6 +31,19 @@ const intitializeDbAndServer = async () => {
 
 intitializeDbAndServer();
 
+app.get("/", async (request, response) => {
+  const getMoviesQuery = `
+    SELECT 
+    * 
+    FROM 
+    movie
+    ORDER BY director_id;    
+    `;
+  const movies = await db.all(getMoviesQuery);
+
+  response.send(movies);
+});
+
 //List of Movie Names From movie API 1
 
 app.get("/movies/", async (request, response) => {
@@ -76,7 +89,7 @@ app.get("/movies/:movieId/", async (request, response) => {
   const { movieId } = request.params;
 
   const getMovieQuery = `
-    SELECT * FROM movie;`;
+    SELECT * FROM movie WHERE movie_id=${movieId};`;
 
   const movies = await db.get(getMovieQuery);
   const convertDbObjectToResponseObject = (dbObject) => {
@@ -121,22 +134,15 @@ app.delete("/movies/:movieId/", async (request, response) => {
     WHERE 
     movie_id =${movieId};
     `;
-  //   response.send(`${movieId}`);
-  try {
-    await db.run(deleteMovieQuery);
-    response.send("Movie Removed");
-  } catch (e) {
-    console.log("Db Error:${e.message}");
-    process.exit(1);
-  }
+  await db.run(deleteMovieQuery);
+  response.send("Movie Removed");
 });
 
 // GET DIRECTORS LIST FROM director table API 6
 
 app.get("/directors/", async (request, response) => {
   const getAllDirectorsQuery = `SELECT * FROM director;`;
-
-  const directors = db.all(getAllDirectorsQuery);
+  const directors = await db.all(getAllDirectorsQuery);
   const convertDbObjectToResponseObject = (dbObject) => {
     return {
       directorId: dbObject.director_id,
@@ -157,9 +163,7 @@ app.get("/directors/:directorId/movies/", async (request, response) => {
     SELECT 
     * 
     FROM 
-    movie 
-    WHERE 
-    director_id=${directorId};`;
+    movie WHERE director_id=${directorId};`;
 
   const movies = await db.all(moviesByDirectorQuery);
   const convertDbObjectToResponseObject = (dbObject) => {
